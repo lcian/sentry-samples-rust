@@ -1,0 +1,13 @@
+{
+  "name": "js-client",
+  "version": "1.0.0",
+  "description": "NodeJS client with Sentry and OpenTelemetry",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@sentry/node": "^7.94.1"
+  }
+} 
