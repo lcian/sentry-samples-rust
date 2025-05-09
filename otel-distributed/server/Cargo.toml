@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.44.2", features = ["full"] }
 axum = { version = "0.8.3", features = ["tracing", "json"] }
-sentry = { path = "../../../sentry-rust/sentry", features = ["opentelemetry"] }
+sentry = { version = "0.38.0", features = ["opentelemetry"] }
 opentelemetry = { version = "0.29.0", features = ["trace"] }
 opentelemetry_sdk = { version = "0.29.0", features = ["trace", "rt-tokio"] }
 opentelemetry-stdout = "0.29.0"
