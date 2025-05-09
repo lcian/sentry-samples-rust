@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::{
     extract::Query,
     http::{HeaderMap, StatusCode},
@@ -13,7 +15,10 @@ use opentelemetry::{
     Context,
 };
 use opentelemetry_sdk::trace::SdkTracerProvider;
-use sentry::integrations::opentelemetry::{SentryPropagator, SentrySpanProcessor};
+use sentry::{
+    integrations::opentelemetry::{SentryPropagator, SentrySpanProcessor},
+    protocol::{OtelContext, TraceContext},
+};
 use serde::{Deserialize, Serialize};
 
 // Header extractor for OpenTelemetry context propagation
