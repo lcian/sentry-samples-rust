@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{
     extract::Query,
     http::{HeaderMap, StatusCode},
@@ -7,7 +5,7 @@ use axum::{
     routing::get,
     Json, Router,
 };
-use opentelemetry::trace::{get_active_span, FutureExt, TraceContextExt};
+use opentelemetry::trace::{get_active_span, TraceContextExt};
 use opentelemetry::{
     global,
     propagation::Extractor,
@@ -15,9 +13,8 @@ use opentelemetry::{
     Context,
 };
 use opentelemetry_sdk::trace::SdkTracerProvider;
+use sentry::integrations::opentelemetry::{SentryPropagator, SentrySpanProcessor};
 use serde::{Deserialize, Serialize};
-use tower_http::trace::{self as http_trace, TraceLayer};
-use tracing::Level;
 
 // Header extractor for OpenTelemetry context propagation
 struct HeaderExtractor<'a> {
@@ -43,24 +40,19 @@ impl<'a> Extractor for HeaderExtractor<'a> {
 fn main() {
     // Initialize the Sentry SDK
     let _guard = sentry::init(sentry::ClientOptions {
-        dsn:
-            "https://6b76fb2a5dc1164849cd797b75b6d879@o447951.ingest.us.sentry.io/4508694563782656"
-                .parse()
-                .ok(),
         traces_sample_rate: 1.0,
-        debug: true,
-        attach_stacktrace: true,
         in_app_include: vec!["rust_server"],
         in_app_exclude: vec![""],
+        debug: true,
         ..sentry::ClientOptions::default()
     });
 
     // Register the Sentry propagator to enable distributed tracing
-    global::set_text_map_propagator(sentry_opentelemetry::SentryPropagator::new());
+    global::set_text_map_propagator(SentryPropagator::new());
 
     // Create a tracer provider with the Sentry span processor
     let tracer_provider = SdkTracerProvider::builder()
-        .with_span_processor(sentry_opentelemetry::SentrySpanProcessor::new())
+        .with_span_processor(SentrySpanProcessor::new())
         .build();
 
     // Set the global tracer provider
@@ -74,11 +66,7 @@ fn main() {
         .unwrap()
         .block_on(async {
             // Build our application with routes
-            let app = Router::new().route("/hello", get(hello)).layer(
-                TraceLayer::new_for_http()
-                    .make_span_with(http_trace::DefaultMakeSpan::new().level(Level::INFO))
-                    .on_response(http_trace::DefaultOnResponse::new().level(Level::INFO)),
-            );
+            let app = Router::new().route("/hello", get(hello));
 
             println!("Starting server on 127.0.0.1:3001");
 
